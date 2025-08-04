@@ -28,6 +28,7 @@ export const registerUser = async (req, res) => {
             username,
             email,
             password: hashedPassword,
+            confirmPassword : hashedPassword,
             createdAt: new Date()
         });
 
