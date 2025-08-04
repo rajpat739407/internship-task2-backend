@@ -8,39 +8,44 @@ import mongoose from "mongoose";
 const router= express.Router();
 
 // Register a new user
-export const registerUser = async( req, res)=>{
+export const registerUser = async (req, res) => {
     const { username, email, password, confirmPassword } = req.body;
-    try{
-        // check if user already exist
-        if(await Voluntier.findOne({ email })){
+    try {
+        // Check if user already exists
+        if (await Voluntier.findOne({ email })) {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        // check if password not matching
-        if(password !== confirmPassword){
-            return res.status(400).json({message: "Passwords do not match"});
+        // Check password match
+        if (password !== confirmPassword) {
+            return res.status(400).json({ message: "Passwords do not match" });
         }
 
-        // hash the password
+        // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = new Voluntier({
             username,
             email,
             password: hashedPassword,
-            confirmPassword: hashedPassword,
             createdAt: new Date()
-        })
+        });
 
         const savedUser = await newUser.save();
-        console.log('User registered successfully: ', savedUser)
         
-    }catch(err){
+        // Send success response with user data (excluding password)
+        res.status(201).json({
+            _id: savedUser._id,
+            username: savedUser.username,
+            email: savedUser.email,
+            createdAt: savedUser.createdAt
+        });
+        
+    } catch (err) {
         console.error(`Error registering user: ${err.message}`);
         res.status(500).json({ message: 'Server error' });
     }
 }
-
 
 export const loginUser = async( req, res)=>{
     const {email, password}= req.body;
